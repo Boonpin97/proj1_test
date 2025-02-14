@@ -68,7 +68,26 @@ protected:
 
     GStatsCntr nHit;  // N.B. predictors should not update these counters directly
     GStatsCntr nMiss; // in their predict() function.
-
+    /****************************************************************************************************/
+    //My para
+    uint index;
+    uint count_1;
+    uint count_2;
+    uint count_3;
+    uint count_4;
+    uint correct_1;
+    uint correct_2;
+    uint correct_3;
+    uint correct_4;
+    uint uinst_1;
+    uint uinst_2;
+    uint uinst_3;
+    uint uinst_4;
+    uint correct[3000];
+    uint All[3000];
+    uint Miss[3000];
+    InstID All_ID[3000];
+    /****************************************************************************************************/
     GStatsEnergy *bpredEnergy;
     int32_t bpred4Cycle;
     int32_t bpred4CycleAddrShift;
@@ -98,10 +117,31 @@ public:
 
         nHit.cinc(pred == CorrectPrediction);
         nMiss.cinc(pred != CorrectPrediction);
-
+    /****************************************************************************************************/    
+        //My code
+        for(int i = 0; i < 2500; i++){
+            //Old IDS
+            if(All_ID[i] == inst->currentID()){
+                if(pred != CorrectPrediction)
+                    Miss[i]++;
+                if(pred == CorrectPrediction)
+                   correct[i]++;
+                break;
+            }
+            //New ID
+            else if(All_ID[i] == 0){
+                All_ID[i] = inst->currentID();
+                if(pred !=  CorrectPrediction)
+                    Miss[i]++;
+                    
+                if(pred == CorrectPrediction)
+                   correct[i]++;
+                break;
+            }
+        }
+    /****************************************************************************************************/
         return pred;
     }
-
     virtual void switchIn(Pid_t pid)  = 0;
     virtual void switchOut(Pid_t pid) = 0;
 };

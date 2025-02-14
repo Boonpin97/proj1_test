@@ -63,10 +63,60 @@ BPred::BPred(int32_t i, int32_t fetchWidth, const char *sec, const char *name)
     } else {
         bpredEnergy = 0;
     }
+    /****************************************************************************************************/
+    //My code
+    for(index = 0; index < 3000; index++){
+        correct[index] = 0;
+        Miss[index] = 0;
+        All[index] = 0;
+        All_ID[index] = 0;
+    }
+    /****************************************************************************************************/
 }
 
 BPred::~BPred()
 {
+    /**********************************************************************************************************************************************************************/
+    //My Code
+    count_1=count_2=count_3=count_4=0;
+    correct_1=correct_2=correct_3=count_4 = 0;
+    uinst_1 = uinst_2 = uinst_3 = uinst_4 = 0;
+    for(int i = 0; i < 3000; i++){
+        All[i] = Miss[i] + correct[i];
+    }
+
+    for(int i = 0; i < 3000; i++){
+        if(All[i] < 10 && All[i] > 0){
+            count_1 += All[i];
+            correct_1 += correct[i];
+            uinst_1++;
+        }
+        if(All[i] < 100 && All[i] >= 10){
+            count_2 += All[i];
+            correct_2 += correct[i];
+            uinst_2++;
+        }
+        if(All[i] < 1000 && All[i] >= 100){
+            count_3 += All[i];
+            correct_3 += correct[i];
+            uinst_3++;
+        }
+        if(All[i] >= 1000){
+            count_4 += All[i];
+            correct_4 += correct[i];
+            uinst_4++;
+        }
+    }
+    //if(All[0] != 0){    
+    std::cout << "1-9     All: " << count_1 <<"   Correct: " << correct_1 << "  Inst Number:" << uinst_1 << std::endl;
+    std::cout << "10-99   All: " << count_2 <<"   Correct: " << correct_2 << "  Inst Number:" << uinst_2<< std::endl;
+    std::cout << "100-999 All: " << count_3 <<"   Correct: " << correct_3 << "  Inst Number:" << uinst_3<< std::endl;
+    std::cout << "1000+   All: " << count_4 <<"   Correct: " << correct_4 << "  Inst Number:" << uinst_4<< std::endl;
+    if(All[0] != 0)
+        //Output the overall Accuracy, should match lable "BPred" in the report of simulator
+        std::cout << "Accuracy : " << double((correct_1 + correct_2 + correct_3 + correct_4))/double(count_1 + count_2 + count_3 + count_4) << std::endl; 
+    std::cout << "================================================================================" << std::endl; 
+    /**********************************************************************************************************************************************************************/
     if(bpredEnergy)
         delete bpredEnergy;
 }
@@ -534,6 +584,7 @@ BPHybrid::BPHybrid(int32_t i, int32_t fetchWidth, const char *section)
     SescConf->isInt(section,   "l2Size");
     SescConf->isPower2(section, "l2Size");
     SescConf->isBetween(section,"l2Bits", 1, 7);
+
 }
 
 BPHybrid::~BPHybrid()
@@ -581,15 +632,16 @@ PredType BPHybrid::predict(const Instruction *inst, InstID oracleID, bool doUpda
     } else {
         metaOut = metaTable.predict(l2Index); // do not update meta
     }
-
+	//std::cout << oracleID << std::endl;
     bool ptaken = metaOut ? localTaken : globalTaken;
 
     if (taken != ptaken) {
         if (doUpdate)
             btb.updateOnly(inst,oracleID);
+	
         return MissPrediction;
     }
-
+	
     return ptaken ? btb.predict(inst, oracleID, doUpdate) : CorrectPrediction;
 }
 
@@ -1172,7 +1224,6 @@ BPred *BPredictor::getBPred(int32_t id, int32_t fetchWidth, const char *sec)
     BPred *pred=0;
 
     const char *type = SescConf->getCharPtr(sec, "type");
-
     // Normal Predictor
     if (strcasecmp(type, "oracle") == 0) {
         pred = new BPOracle(id, fetchWidth, sec);
@@ -1198,8 +1249,7 @@ BPred *BPredictor::getBPred(int32_t id, int32_t fetchWidth, const char *sec)
         MSG("BPredictor::BPredictor Invalid branch predictor type [%s] in section [%s]", type,sec);
         exit(0);
     }
-    I(pred);
-
+    I(pred);	
     return pred;
 }
 
